@@ -1,0 +1,146 @@
+:root {
+    --bg-color: #0a0a0b;
+    --card-bg: rgba(15, 15, 20, 0.9);
+    --neon-blue: #00f2ff;
+    --neon-pink: #ff00ff;
+    --neon-yellow: #f3ec19;
+    --neon-green: #39ff14;
+    --text-color: #e0e0e0;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Segoe UI', 'Courier New', monospace;
+    margin: 0; padding: 20px;
+    background-image: 
+        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    background-size: 100% 2px, 3px 100%;
+}
+
+.cyber-container { max-width: 1200px; margin: 0 auto; }
+
+.stats-bar { display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
+
+.stat-card {
+    background: var(--card-bg);
+    border: 1px solid #333;
+    padding: 15px;
+    flex: 1;
+    min-width: 200px;
+    border-left: 4px solid var(--neon-blue);
+    position: relative;
+}
+
+.stat-card.highlight { border-left-color: var(--neon-yellow); box-shadow: 0 0 10px rgba(243, 236, 25, 0.2); }
+
+.stat-card .label { display: block; font-size: 0.7rem; color: #888; letter-spacing: 1px; }
+.stat-card .value { font-size: 1.8rem; font-weight: bold; }
+
+.section-title { color: var(--neon-blue); border-bottom: 1px solid #222; padding-bottom: 10px; margin-top: 40px; }
+
+.grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px; }
+
+.course-card {
+    background: var(--card-bg);
+    border: 1px solid #222;
+    padding: 20px;
+    position: relative;
+    clip-path: polygon(0 0, 100% 0, 100% 85%, 95% 100%, 0 100%);
+}
+
+.course-card:hover { border-color: var(--neon-pink); }
+
+.salle-badge {
+    position: absolute;
+    top: 10px; right: 10px;
+    padding: 3px 8px;
+    font-size: 0.75rem;
+    background: #000;
+    border: 1px solid var(--neon-green);
+    color: var(--neon-green);
+}
+
+.salle-badge.distanciel { border-color: var(--neon-pink); color: var(--neon-pink); }
+
+.course-card .date { font-size: 0.8rem; color: var(--neon-blue); margin-bottom: 10px; }
+.course-card .title { font-weight: bold; min-height: 3em; margin-bottom: 10px; line-height: 1.2; }
+
+.progress-bar { height: 4px; background: #111; margin-top: 15px; position: relative; }
+.progress-fill { height: 100%; background: var(--neon-pink); box-shadow: 0 0 8px var(--neon-pink); }
+
+.blink { animation: blinker 1s linear infinite; }
+@keyframes blinker { 50% { opacity: 0; } }
+
+.neon-text-blue { color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); }
+.neon-text-pink { color: var(--neon-pink); text-shadow: 0 0 5px var(--neon-pink); }
+.neon-text-yellow { color: var(--neon-yellow); text-shadow: 0 0 5px var(--neon-yellow); }
+
+.no-data-msg {
+    color: #444;
+    font-style: italic;
+    grid-column: 1 / -1;
+    border: 1px dashed #333;
+    padding: 20px;
+    text-align: center;
+}
+.info-text {
+    font-size: 0.8rem;
+    color: #999;
+    line-height: 1.4;
+    text-transform: uppercase;
+}
+
+.cyber-select {
+    background: #000;
+    color: var(--neon-pink);
+    border: 1px solid var(--neon-pink);
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    padding: 5px;
+    width: 100%;
+    margin-top: 5px;
+    cursor: pointer;
+    outline: none;
+    text-shadow: 0 0 5px var(--neon-pink);
+}
+
+.cyber-select option {
+    background: #111;
+    color: var(--text-color);
+}
+
+/* ... mantener estilos anteriores ... */
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.lang-btn {
+    background: transparent;
+    border: 1px solid var(--neon-blue);
+    color: var(--neon-blue);
+    padding: 5px 15px;
+    font-family: 'Courier New', monospace;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: 0.3s;
+    box-shadow: var(--border-glow);
+}
+
+.lang-btn:hover {
+    background: var(--neon-blue);
+    color: #000;
+    box-shadow: 0 0 15px var(--neon-blue);
+}
+
+/* Ajuste para el selector de semanas */
+.cyber-select {
+    border-color: var(--neon-pink);
+    color: var(--neon-pink);
+    text-shadow: 0 0 5px var(--neon-pink);
+}
