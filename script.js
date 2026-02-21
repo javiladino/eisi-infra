@@ -170,7 +170,6 @@ function initSelector() {
                 <div class="date">${c.Fecha} // ${c["Hora Inicio"]} - ${c["Hora Fin"]}</div>
                 <div class="title">${c.Materia}</div>
                 <div class="info-text">
-                    ${t.prof} ${c.Responsable || '---'}<br>
                     ${t.session} ${c.Progreso || '1/1'}
                 </div>
                 <div class="progress-bar"><div class="progress-fill" style="width:${percent}%"></div></div>
