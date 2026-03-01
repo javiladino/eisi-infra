@@ -27,18 +27,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // --- FUNCIÓN GLOBAL PARA GUARDAR TAREAS ---
+    window.saveTaskStatus = function(taskId, isChecked) {
+        localStorage.setItem(taskId, isChecked);
+    };
+
     // --- MANEJO DE IDIOMA ---
     const langBtn = document.getElementById('lang-btn');
-    langBtn.addEventListener('click', () => {
-        currentLang = currentLang === 'es' ? 'fr' : 'es';
-        applyTranslations();
-        updateDashboard(new Date(document.getElementById('week-selector').value));
-    });
+    if(langBtn) {
+        langBtn.addEventListener('click', () => {
+            currentLang = currentLang === 'es' ? 'fr' : 'es';
+            applyTranslations();
+            updateDashboard(new Date(document.getElementById('week-selector').value));
+        });
+    }
 
     function applyTranslations() {
         document.querySelectorAll('.lang-text').forEach(el => {
             const key = el.getAttribute('data-key');
-            el.innerText = translations[currentLang][key];
+            if (translations[currentLang][key]) {
+                el.innerText = translations[currentLang][key];
+            }
         });
     }
 
@@ -59,54 +68,42 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-function initSelector() {
-    const selector = document.getElementById('week-selector');
-    const weekMap = new Map();
-    
-    // 1. Mapear todas las semanas de formación únicas del CSV
-    globalSchedule.forEach(row => {
-        const monday = getStartOfWeek(row.dateObj);
-        const key = monday.toISOString().split('T')[0];
-        if (!weekMap.has(key)) weekMap.set(key, monday);
-    });
+    function initSelector() {
+        const selector = document.getElementById('week-selector');
+        const weekMap = new Map();
+        
+        globalSchedule.forEach(row => {
+            const monday = getStartOfWeek(row.dateObj);
+            const key = monday.toISOString().split('T')[0];
+            if (!weekMap.has(key)) weekMap.set(key, monday);
+        });
 
-    const sortedMondays = Array.from(weekMap.values()).sort((a, b) => a - b);
+        const sortedMondays = Array.from(weekMap.values()).sort((a, b) => a - b);
 
-    // 2. Llenar el menú desplegable
-    sortedMondays.forEach(monday => {
-        const option = document.createElement('option');
-        option.value = monday.toISOString();
-        // Formato: 21 FEB
-        option.innerText = monday.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }).toUpperCase();
-        selector.appendChild(option);
-    });
+        selector.innerHTML = "";
+        sortedMondays.forEach(monday => {
+            const option = document.createElement('option');
+            option.value = monday.toISOString();
+            option.innerText = monday.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }).toUpperCase();
+            selector.appendChild(option);
+        });
 
-    // 3. LÓGICA DE AUTO-SELECCIÓN (Fecha actual: 21 de Febrero 2026)
-    const today = new Date(); 
-    const currentMonday = getStartOfWeek(today);
-    const currentMondayKey = currentMonday.toISOString().split('T')[0];
+        const today = new Date(); 
+        const currentMonday = getStartOfWeek(today);
+        const currentMondayKey = currentMonday.toISOString().split('T')[0];
 
-    if (weekMap.has(currentMondayKey)) {
-        // Si hay clases esta semana, seleccionarla
-        selector.value = currentMonday.toISOString();
-    } else {
-        // Si es semana de vacaciones, buscar la primera semana con clases en el futuro
-        const nextAvailable = sortedMondays.find(monday => monday > today);
-        if (nextAvailable) {
-            selector.value = nextAvailable.toISOString();
+        if (weekMap.has(currentMondayKey)) {
+            selector.value = currentMonday.toISOString();
         } else {
-            // Si el curso terminó, mostrar la última semana grabada
-            selector.value = sortedMondays[sortedMondays.length - 1].toISOString();
+            const nextAvailable = sortedMondays.find(monday => monday > today);
+            if (nextAvailable) selector.value = nextAvailable.toISOString();
         }
-    }
 
-    // 4. Escuchar cambios y refrescar
-    selector.addEventListener('change', (e) => updateDashboard(new Date(e.target.value)));
-    
-    // Aplicar traducciones e iniciar vista
-    applyTranslations();
-    updateDashboard(new Date(selector.value));
-}
+        selector.addEventListener('change', (e) => updateDashboard(new Date(e.target.value)));
+        
+        applyTranslations();
+        updateDashboard(new Date(selector.value));
+    }
 
     function updateDashboard(referenceDate) {
         const startSelected = getStartOfWeek(referenceDate);
@@ -114,7 +111,6 @@ function initSelector() {
         endSelected.setDate(endSelected.getDate() + 6);
         endSelected.setHours(23, 59, 59);
 
-        // Actualizar estadísticas (Semanas restantes)
         const future = globalSchedule.filter(r => r.dateObj >= referenceDate);
         if (future.length > 0) {
             const lastDate = future[future.length - 1].dateObj;
@@ -125,14 +121,15 @@ function initSelector() {
             document.getElementById('weeks-training').innerText = trainingWeeksCount.size;
         }
 
-        // Renderizar ambas secciones
         const currentClasses = globalSchedule.filter(r => r.dateObj >= startSelected && r.dateObj <= endSelected);
         renderList(currentClasses, 'current-week-list');
 
         const nextActivity = globalSchedule.filter(r => r.dateObj > endSelected);
         if (nextActivity.length > 0) {
             const nStart = getStartOfWeek(nextActivity[0].dateObj);
-            const nEnd = new Date(nStart); nEnd.setDate(nEnd.getDate() + 6); nEnd.setHours(23, 59, 59);
+            const nEnd = new Date(nStart); 
+            nEnd.setDate(nEnd.getDate() + 6); 
+            nEnd.setHours(23, 59, 59);
             renderList(globalSchedule.filter(r => r.dateObj >= nStart && r.dateObj <= nEnd), 'next-week-list');
         } else {
             renderList([], 'next-week-list');
@@ -159,9 +156,34 @@ function initSelector() {
         }
 
         classes.forEach(c => {
+            // Cálculos de progreso y sala
             const progressArr = String(c.Progreso || '').split('/');
             const percent = progressArr.length === 2 ? (parseInt(progressArr[0])/parseInt(progressArr[1])*100) : 0;
             const roomInfo = c.Salle || t.roomDef;
+            
+            // Generar ID único para tareas
+            const cardId = `${c.Materia}-${c.Fecha}`.replace(/\s+/g, '-');
+
+            // Procesar las tareas de la columna CSV
+            let checklistHtml = '';
+            if (c.Tareas) {
+                const listaTareas = c.Tareas.split('|');
+                checklistHtml = `<ul class="cyber-checklist">`;
+                listaTareas.forEach((tarea, index) => {
+                    const taskId = `${cardId}-task-${index}`;
+                    const isChecked = localStorage.getItem(taskId) === 'true' ? 'checked' : '';
+                    checklistHtml += `
+                        <li>
+                            <label class="cyber-checkbox-label">
+                                <input type="checkbox" id="${taskId}" ${isChecked} 
+                                    onchange="saveTaskStatus('${taskId}', this.checked)">
+                                <span class="checkmark"></span>
+                                <span class="task-text">${tarea.trim()}</span>
+                            </label>
+                        </li>`;
+                });
+                checklistHtml += `</ul>`;
+            }
 
             const card = document.createElement('div');
             card.className = 'course-card';
@@ -172,6 +194,7 @@ function initSelector() {
                 <div class="info-text">
                     ${t.session} ${c.Progreso || '1/1'}
                 </div>
+                ${checklistHtml}
                 <div class="progress-bar"><div class="progress-fill" style="width:${percent}%"></div></div>
             `;
             container.appendChild(card);
